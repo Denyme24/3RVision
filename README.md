@@ -1,13 +1,6 @@
-<<<<<<< HEAD
 #  3RVision - See Your Products' Sustainable Future 🌱
 
 > "Every product tells a story of sustainability. With 3RVision, we help you write its next chapter via reuse, recycling and resale."
-
-**Team Name:** Quaternary  
-**Hackathon:** FANTOMCODE '25  
-**Date:** 11th and 12th April 2025
-
-
 
 ## 📖 Table of Contents
 
@@ -96,7 +89,8 @@ In today's consumer-driven world, we face several critical challenges:
 
 ## 🧩 Architecture
 
-<img width="393" alt="Screenshot 2025-04-12 at 5 05 08 AM" src="https://github.com/user-attachments/assets/557866d7-6757-4354-8843-7f55b74c1d39" />
+![PHOTO-2025-04-12-10-45-59](https://github.com/user-attachments/assets/b7fae772-8371-4276-b5a1-8c14538af0f0)
+
 
 
 
@@ -106,7 +100,7 @@ In today's consumer-driven world, we face several critical challenges:
 ### Prerequisites
 - Node.js 18+
 - Go 1.21+
-- Python 3.8+
+- Python 3.10 or further
 - Chrome/Edge browser
 - AWS account
 - MongoDB
@@ -136,15 +130,22 @@ Create `.env` files in respective directories:
 
 #### Frontend (.env.local)
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8080
 MONGODB_URI=your_mongodb_uri
+JWT_SECRET=secret_key _for_JWT_tokens
+EMAIL_USER=email_username
+EMAIL_PASS=email_password
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 #### Backend (.env)
 ```
 AWS_REGION=your_aws_region
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 S3_BUCKET_NAME=your_bucket_name
-FLASK_SERVER_URL=http://localhost:5000
+GEMINI_API_KEY=your_api_key
+FLASK_SERVER_URL=http://localhost:5001
+PORT=8080
 ```
 
 
@@ -162,13 +163,3 @@ FLASK_SERVER_URL=http://localhost:5000
 - CORS enabled
 - Secure API endpoints
 
-
-
-
-
-
-
-
-=======
-# 3RVision
->>>>>>> c9e2e6a57e661c82404f5a083e702c35d14cd3a6
