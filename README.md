@@ -2,18 +2,6 @@
 
 > "Every product tells a story of sustainability. With 3RVision, we help you write its next chapter via reuse, recycling and resale."
 
-## 📖 Table of Contents
-
-1. Introduction
-2. Problem Statement
-3. Solution Overview
-4. Tech Stack
-5. Architecture / Diagram
-6. Installation & Usage
-7. Team Members
-
-
-
 ## 🧠 Introduction
 
 3RVision is a comprehensive sustainability analysis platform that helps users make informed decisions about product lifecycle management. By analyzing product images, our platform provides detailed insights into how you can extend a product's life through three key sustainability pillars: reuse, recycle, and resale. Whether you're looking to dispose of items responsibly or make sustainable purchasing decisions, 3RVision guides you towards environmentally conscious choices.
@@ -59,31 +47,14 @@ In today's consumer-driven world, we face several critical challenges:
 
 
 
-## 🛠️ Tech Stack
+### 🛠️ Tech Stack
 
-### Frontend
-- Next.js 15.2.4
-- React 19
-- TypeScript
-- TailwindCSS
-- Framer Motion
-- Three.js
-
-### Backend
-- Go (Golang)
-- Gin Web Framework
-- AWS S3
-- MongoDB
-
-### Extension
-- JavaScript
-- Chrome Extension Manifest V3
-- Content Scripts
-
-### ML Component
-- Python
-- Computer Vision models
-- Flask server
+| Category      | Technologies                                                                 |
+|---------------|-------------------------------------------------------------------------------|
+| **Frontend**  | Next.js 15.2.4, React 19, TypeScript, TailwindCSS, Framer Motion, Three.js    |
+| **Backend**   | Go (Golang), Gin Web Framework, AWS S3, MongoDB                               |
+| **Extension** | JavaScript, Chrome Extension Manifest V3, Content Scripts                     |
+| **ML Component** | Python, Computer Vision Models, Flask Server                               |
 
 
 
@@ -95,7 +66,7 @@ In today's consumer-driven world, we face several critical challenges:
 
 
 
-## ☘️ Installation & Usage
+## ☘️ Installation
 
 ### Prerequisites
 - Node.js 18+
@@ -105,18 +76,32 @@ In today's consumer-driven world, we face several critical challenges:
 - AWS account
 - MongoDB
 
-### Frontend Setup
+### Run Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Backend Setup
+### Run Backend 
 ```bash
 cd backend
 go mod download
 go run main.go
+```
+
+### Run ML model
+```bash
+cd ml
+python3.10 -m venv myenv
+source myenv/bin/activate  # For macOS/Linux
+# OR
+myenv\Scripts\activate  # For Windows
+pip install --upgrade pip
+pip install -r requirements.txt
+# tensorflow-intel==2.18.0  ← not supported on macOS ARM (remove this line in requirements.txt)
+python app.py or python3 app.py
+
 ```
 
 ### Extension Setup
@@ -149,17 +134,13 @@ PORT=8080
 ```
 
 
-## 👥 Team Members
+## 👥 Contributors
 
 [Khushi Agarawal](https://github.com/khushiiagrawal)<br/>
 [Arpit Srivastava](https://github.com/Arpit529Srivastava)<br/>
 [Naman Raj](https://github.com/Denyme24)<br/>
 [Shreyansh Pathak](https://github.com/Shrey327?tab=following)<br/>
 
-## 🔒 Security Features
-- Protected routes for authenticated users
-- Secure image processing
-- Environment variable protection
-- CORS enabled
-- Secure API endpoints
+### 📄 License
 
+This project is licensed under the [MIT License](LICENSE).
