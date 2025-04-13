@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #  3RVision - See Your Products' Sustainable Future 🌱
 
 > "Every product tells a story of sustainability. With 3RVision, we help you write its next chapter via reuse, recycling and resale."
@@ -168,3 +169,6 @@ FLASK_SERVER_URL=http://localhost:5000
 
 
 
+=======
+# 3RVision
+>>>>>>> c9e2e6a57e661c82404f5a083e702c35d14cd3a6
