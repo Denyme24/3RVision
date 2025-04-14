@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -14,9 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the model and application files
 COPY . .
 
-# Environment variables
-ENV PORT=8080
-ENV PYTHONUNBUFFERED=1
 
 # Expose the port
 EXPOSE ${PORT}

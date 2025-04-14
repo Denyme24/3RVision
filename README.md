@@ -102,6 +102,9 @@ pip install -r requirements.txt
 # tensorflow-intel==2.18.0  ← not supported on macOS ARM (remove this line in requirements.txt)
 python app.py or python3 app.py
 
+#For conda environment
+conda create --name myenv python=3.10
+conda activate myenv          
 ```
 
 ### Extension Setup
