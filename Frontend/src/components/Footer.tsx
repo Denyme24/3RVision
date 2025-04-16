@@ -150,7 +150,7 @@ const Footer = () => {
             >
               <h4 className="text-lg font-semibold mb-4">Stay Updated</h4>
               <p className="text-gray-400 mb-4">
-                Subscribe to our newsletter for the latest updates on
+                 Subscribe to our newsletter for the latest updates on
                 sustainable waste management.
               </p>
               <form className="flex">
