@@ -1,5 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaRecycle, FaStore, FaSync, FaLeaf, FaInfoCircle, FaExternalLinkAlt } from "react-icons/fa";
+import {
+  FaTimes,
+  FaRecycle,
+  FaStore,
+  FaSync,
+  FaLeaf,
+  FaInfoCircle,
+  FaExternalLinkAlt,
+} from "react-icons/fa";
 import EcoLoader from "./EcoLoader";
 
 interface AnalysisResultModalProps {
@@ -38,16 +46,16 @@ interface AnalysisResultModalProps {
   isLoading?: boolean;
 }
 
-type PlatformType = 'OLX' | 'Facebook Marketplace' | 'Quickr';
+type PlatformType = "OLX" | "Facebook Marketplace" | "Quickr";
 
 const platformMap: Record<PlatformType, string> = {
-  'OLX': 'https://www.olx.in',
-  'Facebook Marketplace': 'https://www.facebook.com/marketplace',
-  'Quickr': 'https://www.quikr.com',
+  OLX: "https://www.olx.in",
+  "Facebook Marketplace": "https://www.facebook.com/marketplace",
+  Quickr: "https://www.quikr.com",
 };
 
 const getPlatformUrl = (platform: string): string => {
-  return (platformMap[platform as PlatformType] || '#');
+  return platformMap[platform as PlatformType] || "#";
 };
 
 const AnalysisResultModal = ({
@@ -68,7 +76,7 @@ const AnalysisResultModal = ({
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   const containerVariants = {
@@ -76,14 +84,14 @@ const AnalysisResultModal = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   return (
     <AnimatePresence>
-      <motion.div 
+      <motion.div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -106,7 +114,9 @@ const AnalysisResultModal = ({
               >
                 <FaRecycle className="text-green-400 text-2xl" />
               </motion.div>
-              <h2 className="text-2xl font-bold text-white">Analysis Results</h2>
+              <h2 className="text-2xl font-bold text-white">
+                Analysis Results
+              </h2>
             </div>
             <motion.button
               whileHover={{ scale: 1.1, rotate: 90 }}
@@ -149,16 +159,22 @@ const AnalysisResultModal = ({
                 >
                   <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                     <FaInfoCircle className="text-green-400 text-xl" />
-                    <h3 className="font-semibold text-lg text-white">Basic Information</h3>
+                    <h3 className="font-semibold text-lg text-white">
+                      Basic Information
+                    </h3>
                   </div>
                   <div className="space-y-4">
                     <p className="text-green-100">
-                      <span className="font-medium text-green-400">Predicted Class: </span>
+                      <span className="font-medium text-green-400">
+                        Predicted Class:{" "}
+                      </span>
                       {predictedClass}
                     </p>
                     <div>
                       <p className="text-green-100 mb-2">
-                        <span className="font-medium text-green-400">Confidence: </span>
+                        <span className="font-medium text-green-400">
+                          Confidence:{" "}
+                        </span>
                         {confidence.toFixed(2)}%
                       </p>
                       <div className="overflow-hidden h-2 text-xs flex rounded-full bg-green-900/50">
@@ -180,7 +196,9 @@ const AnalysisResultModal = ({
                 >
                   <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                     <FaInfoCircle className="text-green-400 text-xl" />
-                    <h3 className="font-semibold text-lg text-white">Description</h3>
+                    <h3 className="font-semibold text-lg text-white">
+                      Description
+                    </h3>
                   </div>
                   <p className="text-green-100">{analysis.description}</p>
                 </motion.div>
@@ -200,41 +218,65 @@ const AnalysisResultModal = ({
                 >
                   <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                     <FaStore className="text-blue-400 text-xl" />
-                    <h3 className="font-semibold text-lg text-white">Resale Potential</h3>
+                    <h3 className="font-semibold text-lg text-white">
+                      Resale Potential
+                    </h3>
                   </div>
                   {analysis.resalable.is_resalable ? (
                     <div className="space-y-3 text-blue-100">
-                      <p><span className="font-medium text-blue-400">Condition:</span> {analysis.resalable.condition}</p>
-                      <p><span className="font-medium text-blue-400">Value:</span> {analysis.resalable.value}</p>
+                      <p>
+                        <span className="font-medium text-blue-400">
+                          Condition:
+                        </span>{" "}
+                        {analysis.resalable.condition}
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-400">
+                          Value:
+                        </span>{" "}
+                        {analysis.resalable.value}
+                      </p>
                       <div>
-                        <p className="font-medium text-blue-400 mb-2">Platforms:</p>
+                        <p className="font-medium text-blue-400 mb-2">
+                          Platforms:
+                        </p>
                         <ul className="list-none space-y-2">
-                          {analysis.resalable.platforms.map((platform, index) => (
-                            <motion.li
-                              key={index}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex items-center gap-2"
-                            >
-                              <a 
-                                href={getPlatformUrl(platform)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 bg-blue-800/20 p-2 rounded-lg w-full group hover:bg-blue-700/30 transition-all duration-300"
+                          {analysis.resalable.platforms.map(
+                            (platform, index) => (
+                              <motion.li
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="flex items-center gap-2"
                               >
-                                <span className="w-2 h-2 bg-blue-400 rounded-full group-hover:w-3 group-hover:h-3 transition-all duration-300" />
-                                <span className="flex-grow">{platform}</span>
-                                <FaExternalLinkAlt className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" size={12} />
-                              </a>
-                            </motion.li>
-                          ))}
+                                <a
+                                  href={getPlatformUrl(platform)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 bg-blue-800/20 p-2 rounded-lg w-full group hover:bg-blue-700/30 transition-all duration-300"
+                                >
+                                  <span className="w-2 h-2 bg-blue-400 rounded-full group-hover:w-3 group-hover:h-3 transition-all duration-300" />
+                                  <span className="flex-grow">{platform}</span>
+                                  <FaExternalLinkAlt
+                                    className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    size={12}
+                                  />
+                                </a>
+                              </motion.li>
+                            )
+                          )}
                         </ul>
                       </div>
-                      <p className="mt-3"><span className="font-medium text-blue-400">Tips:</span> {analysis.resalable.tips}</p>
+                      <p className="mt-3">
+                        <span className="font-medium text-blue-400">Tips:</span>{" "}
+                        {analysis.resalable.tips}
+                      </p>
                     </div>
                   ) : (
-                    <p className="text-blue-200/70">This item is not recommended for resale.</p>
+                    <p className="text-blue-200/70">
+                      This item is not recommended for resale.
+                    </p>
                   )}
                 </motion.div>
 
@@ -245,15 +287,34 @@ const AnalysisResultModal = ({
                 >
                   <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                     <FaRecycle className="text-green-400 text-xl" />
-                    <h3 className="font-semibold text-lg text-white">Recycling Information</h3>
+                    <h3 className="font-semibold text-lg text-white">
+                      Recycling Information
+                    </h3>
                   </div>
                   {analysis.recyclable.is_recyclable ? (
                     <div className="space-y-3 text-green-100">
-                      <p><span className="font-medium text-green-400">Material:</span> {analysis.recyclable.material}</p>
-                      <p><span className="font-medium text-green-400">Process:</span> {analysis.recyclable.process}</p>
-                      <p><span className="font-medium text-green-400">Impact:</span> {analysis.recyclable.impact}</p>
+                      <p>
+                        <span className="font-medium text-green-400">
+                          Material:
+                        </span>{" "}
+                        {analysis.recyclable.material}
+                      </p>
+                      <p>
+                        <span className="font-medium text-green-400">
+                          Process:
+                        </span>{" "}
+                        {analysis.recyclable.process}
+                      </p>
+                      <p>
+                        <span className="font-medium text-green-400">
+                          Impact:
+                        </span>{" "}
+                        {analysis.recyclable.impact}
+                      </p>
                       <div>
-                        <p className="font-medium text-green-400 mb-2">Centers:</p>
+                        <p className="font-medium text-green-400 mb-2">
+                          Centers:
+                        </p>
                         <ul className="list-none space-y-2">
                           {analysis.recyclable.centers.map((center, index) => (
                             <motion.li
@@ -271,7 +332,9 @@ const AnalysisResultModal = ({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-green-200/70">This item is not recyclable.</p>
+                    <p className="text-green-200/70">
+                      This item is not recyclable.
+                    </p>
                   )}
                 </motion.div>
 
@@ -282,14 +345,28 @@ const AnalysisResultModal = ({
                 >
                   <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                     <FaSync className="text-purple-400 text-xl" />
-                    <h3 className="font-semibold text-lg text-white">Reuse Options</h3>
+                    <h3 className="font-semibold text-lg text-white">
+                      Reuse Options
+                    </h3>
                   </div>
                   {analysis.reusable.is_reusable ? (
                     <div className="space-y-3 text-purple-100">
-                      <p><span className="font-medium text-purple-400">Durability:</span> {analysis.reusable.durability}</p>
-                      <p><span className="font-medium text-purple-400">Benefits:</span> {analysis.reusable.benefits}</p>
+                      <p>
+                        <span className="font-medium text-purple-400">
+                          Durability:
+                        </span>{" "}
+                        {analysis.reusable.durability}
+                      </p>
+                      <p>
+                        <span className="font-medium text-purple-400">
+                          Benefits:
+                        </span>{" "}
+                        {analysis.reusable.benefits}
+                      </p>
                       <div>
-                        <p className="font-medium text-purple-400 mb-2">Ways to Reuse:</p>
+                        <p className="font-medium text-purple-400 mb-2">
+                          Ways to Reuse:
+                        </p>
                         <ul className="list-none space-y-2">
                           {analysis.reusable.ways.map((way, index) => (
                             <motion.li
@@ -305,10 +382,17 @@ const AnalysisResultModal = ({
                           ))}
                         </ul>
                       </div>
-                      <p className="mt-3"><span className="font-medium text-purple-400">Tutorial:</span> {analysis.reusable.tutorial}</p>
+                      <p className="mt-3">
+                        <span className="font-medium text-purple-400">
+                          Tutorial:
+                        </span>{" "}
+                        {analysis.reusable.tutorial}
+                      </p>
                     </div>
                   ) : (
-                    <p className="text-purple-200/70">This item is not suitable for reuse.</p>
+                    <p className="text-purple-200/70">
+                      This item is not suitable for reuse.
+                    </p>
                   )}
                 </motion.div>
 
@@ -319,16 +403,33 @@ const AnalysisResultModal = ({
                 >
                   <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
                     <FaLeaf className="text-yellow-400 text-xl" />
-                    <h3 className="font-semibold text-lg text-white">Biodegradability</h3>
+                    <h3 className="font-semibold text-lg text-white">
+                      Biodegradability
+                    </h3>
                   </div>
                   <div className="space-y-3 text-yellow-100">
                     <p>
-                      <span className="font-medium text-yellow-400">Status: </span>
-                      <span className={`px-3 py-1 rounded-full text-sm ${analysis.biodegradable ? 'bg-yellow-400/20 text-yellow-200' : 'bg-red-400/20 text-red-200'}`}>
-                        {analysis.biodegradable ? "Biodegradable" : "Non-biodegradable"}
+                      <span className="font-medium text-yellow-400">
+                        Status:{" "}
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          analysis.biodegradable
+                            ? "bg-yellow-400/20 text-yellow-200"
+                            : "bg-red-400/20 text-red-200"
+                        }`}
+                      >
+                        {analysis.biodegradable
+                          ? "Biodegradable"
+                          : "Non-biodegradable"}
                       </span>
                     </p>
-                    <p><span className="font-medium text-yellow-400">Time to Degrade:</span> {analysis.time_to_degrade}</p>
+                    <p>
+                      <span className="font-medium text-yellow-400">
+                        Time to Degrade:
+                      </span>{" "}
+                      {analysis.time_to_degrade}
+                    </p>
                   </div>
                 </motion.div>
               </motion.div>
@@ -340,4 +441,4 @@ const AnalysisResultModal = ({
   );
 };
 
-export default AnalysisResultModal; 
+export default AnalysisResultModal;

@@ -61,7 +61,9 @@ const HeroSection = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
 
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null
+  );
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -77,7 +79,11 @@ const HeroSection = () => {
       };
 
       const attemptPlay = async () => {
-        try { await video.play(); } catch (err) { console.error("Error playing video", err); }
+        try {
+          await video.play();
+        } catch (err) {
+          console.error("Error playing video", err);
+        }
       };
 
       const readyTimeout = setTimeout(() => {
@@ -86,11 +92,15 @@ const HeroSection = () => {
         }
       }, 3000);
 
-      events.forEach((event) => video.addEventListener(event, handleVideoReady));
+      events.forEach((event) =>
+        video.addEventListener(event, handleVideoReady)
+      );
       attemptPlay();
 
       return () => {
-        events.forEach((event) => video.removeEventListener(event, handleVideoReady));
+        events.forEach((event) =>
+          video.removeEventListener(event, handleVideoReady)
+        );
         clearTimeout(readyTimeout);
       };
     } else {
@@ -102,11 +112,17 @@ const HeroSection = () => {
     if (showCamera && isCameraInitializing) {
       const initializeCamera = async () => {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
           setCameraStream(stream);
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            try { await videoRef.current.play(); } catch (e) { console.error("Error playing video:", e); }
+            try {
+              await videoRef.current.play();
+            } catch (e) {
+              console.error("Error playing video:", e);
+            }
           }
           setIsCameraInitializing(false);
         } catch (error) {
@@ -137,10 +153,45 @@ const HeroSection = () => {
 
     try {
       setIsProcessing(true);
-      
+
       const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => blob && resolve(blob), 'image/jpeg');
+        canvas.toBlob((blob) => blob && resolve(blob), "image/jpeg");
       });
+
+      // Show the modal with loading state immediately
+      setAnalysisResult({
+        imageUrl: URL.createObjectURL(blob),
+        s3Url: "",
+        predictedClass: "",
+        confidence: 0,
+        analysis: {
+          resalable: {
+            is_resalable: false,
+            platforms: [],
+            condition: "",
+            value: "",
+            tips: "",
+          },
+          recyclable: {
+            is_recyclable: false,
+            centers: [],
+            material: "",
+            process: "",
+            impact: "",
+          },
+          reusable: {
+            is_reusable: false,
+            ways: [],
+            durability: "",
+            benefits: "",
+            tutorial: "",
+          },
+          biodegradable: false,
+          time_to_degrade: "",
+          description: "",
+        },
+      });
+      setShowAnalysisModal(true);
 
       // Send to Go Server (S3 upload)
       const goFormData = new FormData();
@@ -174,19 +225,18 @@ const HeroSection = () => {
       stopCamera();
       decrementUploads();
 
-      // Set analysis result and show modal
+      // Update analysis result with actual data
       setAnalysisResult({
         imageUrl: URL.createObjectURL(blob),
         s3Url: goData.url,
         predictedClass: flaskData.predicted_class,
         confidence: flaskData.confidence,
-        analysis: analysisData.analysis
+        analysis: analysisData.analysis,
       });
-      setShowAnalysisModal(true);
-
     } catch (error) {
       console.error("Error processing image:", error);
       alert("Failed to process image. Please try again.");
+      setShowAnalysisModal(false);
     } finally {
       setIsProcessing(false);
     }
@@ -213,26 +263,26 @@ const HeroSection = () => {
             platforms: [],
             condition: "",
             value: "",
-            tips: ""
+            tips: "",
           },
           recyclable: {
             is_recyclable: false,
             centers: [],
             material: "",
             process: "",
-            impact: ""
+            impact: "",
           },
           reusable: {
             is_reusable: false,
             ways: [],
             durability: "",
             benefits: "",
-            tutorial: ""
+            tutorial: "",
           },
           biodegradable: false,
           time_to_degrade: "",
-          description: ""
-        }
+          description: "",
+        },
       });
 
       // Send to Go Server (S3 upload)
@@ -271,9 +321,8 @@ const HeroSection = () => {
         s3Url: goData.url,
         predictedClass: flaskData.predicted_class,
         confidence: flaskData.confidence,
-        analysis: analysisData.analysis
+        analysis: analysisData.analysis,
       });
-
     } catch (error) {
       console.error("Upload error:", error);
       alert("Failed to upload image. Please try again.");
@@ -307,7 +356,7 @@ const HeroSection = () => {
       // Update only the analysis part while keeping other properties
       setAnalysisResult({
         ...analysisResult,
-        analysis: analysisData.analysis
+        analysis: analysisData.analysis,
       });
       setShowAnalysisModal(true);
     } catch (error) {
@@ -319,7 +368,7 @@ const HeroSection = () => {
   };
 
   const stopCamera = () => {
-    cameraStream?.getTracks().forEach(track => track.stop());
+    cameraStream?.getTracks().forEach((track) => track.stop());
     setCameraStream(null);
   };
 
@@ -346,14 +395,22 @@ const HeroSection = () => {
   };
 
   return (
-    <div id="hero" className="relative h-screen w-full backdrop-blur-lg bg-gradient-to-b from-green-900/10 via-teal-900/70 to-green-900/40 overflow-hidden pt-16">
+    <div
+      id="hero"
+      className="relative h-screen w-full backdrop-blur-lg bg-gradient-to-b from-green-900/10 via-teal-900/70 to-green-900/40 overflow-hidden pt-16"
+    >
       <div className="absolute mt-16 inset-0">
         <Canvas>
           <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={45} />
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} intensity={1} />
           <Earth3D scale={1.3} />
-          <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} rotateSpeed={0.5} />
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            enableRotate={false}
+            rotateSpeed={0.5}
+          />
         </Canvas>
       </div>
 
@@ -367,13 +424,20 @@ const HeroSection = () => {
               playsInline
               muted
               className="rounded-lg"
-              style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+              style={{
+                display: "block",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
             />
             {(isCameraInitializing || !isCameraReady) && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
                 <p className="text-white ml-4">
-                  {isCameraInitializing ? "Initializing camera..." : "Preparing stream..."}
+                  {isCameraInitializing
+                    ? "Initializing camera..."
+                    : "Preparing stream..."}
                 </p>
               </div>
             )}
@@ -382,7 +446,10 @@ const HeroSection = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => { setShowCamera(false); stopCamera(); }}
+              onClick={() => {
+                setShowCamera(false);
+                stopCamera();
+              }}
               className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-lg"
             >
               Cancel
@@ -393,7 +460,9 @@ const HeroSection = () => {
               onClick={captureImage}
               disabled={!isCameraReady}
               className={`px-6 py-3 text-white rounded-lg shadow-lg ${
-                isCameraReady ? "bg-green-600 hover:bg-green-700" : "bg-gray-500 cursor-not-allowed"
+                isCameraReady
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-500 cursor-not-allowed"
               }`}
             >
               {isCameraReady ? "Capture" : "Waiting for camera..."}
@@ -404,7 +473,11 @@ const HeroSection = () => {
 
       {capturedImage && !showCamera && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90">
-          <img src={capturedImage} alt="Captured" className="max-w-full max-h-[70vh] rounded-lg" />
+          <img
+            src={capturedImage}
+            alt="Captured"
+            className="max-w-full max-h-[70vh] rounded-lg"
+          />
           <div className="mt-4 flex space-x-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -426,30 +499,69 @@ const HeroSection = () => {
         </div>
       )}
 
-      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="mb-2">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative">
-            <motion.h1 
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-2"
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative"
+          >
+            <motion.h1
               initial={{ opacity: 0, y: -50, scale: 0.5, rotate: -10 }}
               animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-              transition={{ duration: 1.2, type: "spring", stiffness: 100, damping: 10, delay: 0.2 }}
+              transition={{
+                duration: 1.2,
+                type: "spring",
+                stiffness: 100,
+                damping: 10,
+                delay: 0.2,
+              }}
               className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-white mb-12 drop-shadow-lg relative z-10 tracking-tight"
-              style={{ fontFamily: "'Montserrat', 'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+              style={{
+                fontFamily: "'Montserrat', 'Poppins', sans-serif",
+                letterSpacing: "-0.02em",
+              }}
             >
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 1.0 }}
                 className="inline-block"
-                style={{ fontFamily: "'Montserrat', 'Poppins', sans-serif", letterSpacing: "-0.03em" }}
+                style={{
+                  fontFamily: "'Montserrat', 'Poppins', sans-serif",
+                  letterSpacing: "-0.03em",
+                }}
               >
                 Welcome to{" "}
                 <motion.span
                   initial={{ color: "#ffffff" }}
-                  animate={{ color: ["#ffffff", "#4ade80", "#ffffff"], textShadow: ["0 0 0px rgba(74, 222, 128, 0)", "0 0 20px rgba(74, 222, 128, 0.8)", "0 0 0px rgba(74, 222, 128, 0)"] }}
-                  transition={{ duration: 2, delay: 0.5, repeat: Infinity, repeatDelay: 2 }}
+                  animate={{
+                    color: ["#ffffff", "#4ade80", "#ffffff"],
+                    textShadow: [
+                      "0 0 0px rgba(74, 222, 128, 0)",
+                      "0 0 20px rgba(74, 222, 128, 0.8)",
+                      "0 0 0px rgba(74, 222, 128, 0)",
+                    ],
+                  }}
+                  transition={{
+                    duration: 2,
+                    delay: 0.5,
+                    repeat: Infinity,
+                    repeatDelay: 2,
+                  }}
                   className="text-green-200 font-black"
                 >
                   3RVision
@@ -459,10 +571,16 @@ const HeroSection = () => {
             </motion.h1>
           </motion.div>
 
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 100, damping: 15 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.3,
+              type: "spring",
+              stiffness: 100,
+              damping: 15,
+            }}
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-lg"
           >
             Revolutionizing Sustainability
@@ -481,7 +599,11 @@ const HeroSection = () => {
           </motion.p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center gap-4"
+        >
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -515,19 +637,52 @@ const HeroSection = () => {
           </div>
 
           {!user && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white/20 backdrop-blur-md rounded-lg p-2 mt-3 text-white max-w-md shadow-lg">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white/20 backdrop-blur-md rounded-lg p-2 mt-3 text-white max-w-md shadow-lg"
+            >
               <p className="text-sm md:text-base">
-                You have <strong>{remainingUploads}</strong> free image operations remaining.<br />
-                <span className="text-xs sm:text-sm">Sign up for unlimited access</span>
+                You have <strong>{remainingUploads}</strong> free image
+                operations remaining.
+                <br />
+                <span className="text-xs sm:text-sm">
+                  Sign up for unlimited access
+                </span>
               </p>
             </motion.div>
           )}
         </motion.div>
       </div>
 
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} onSwitchToSignup={() => { setShowLoginModal(false); setShowSignupModal(true); }} />
-      <SignupModal isOpen={showSignupModal} onClose={() => setShowSignupModal(false)} onSwitchToLogin={() => { setShowSignupModal(false); setShowLoginModal(true); }} />
-      <UnauthorizedDialog isOpen={showUnauthorizedDialog} onClose={() => setShowUnauthorizedDialog(false)} onLogin={() => { setShowUnauthorizedDialog(false); setShowLoginModal(true); }} onSignup={() => { setShowUnauthorizedDialog(false); setShowSignupModal(true); }} />
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToSignup={() => {
+          setShowLoginModal(false);
+          setShowSignupModal(true);
+        }}
+      />
+      <SignupModal
+        isOpen={showSignupModal}
+        onClose={() => setShowSignupModal(false)}
+        onSwitchToLogin={() => {
+          setShowSignupModal(false);
+          setShowLoginModal(true);
+        }}
+      />
+      <UnauthorizedDialog
+        isOpen={showUnauthorizedDialog}
+        onClose={() => setShowUnauthorizedDialog(false)}
+        onLogin={() => {
+          setShowUnauthorizedDialog(false);
+          setShowLoginModal(true);
+        }}
+        onSignup={() => {
+          setShowUnauthorizedDialog(false);
+          setShowSignupModal(true);
+        }}
+      />
 
       {analysisResult && (
         <AnalysisResultModal
