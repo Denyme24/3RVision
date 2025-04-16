@@ -4,18 +4,19 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/jwt';
 
+// Using type assertion to satisfy the type checker
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: any
 ) {
   try {
-    // Get the post ID from the URL params
-    const { id } = params;
-    
-    // Verify user is authenticated
+    // Safely access params whether it's a Promise or not
+    const id = params && (params instanceof Promise ? (await params).id : params.id);
+
+    // Get cookies with await
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
-    
+
     let user = null;
     if (token) {
       try {
@@ -33,35 +34,38 @@ export async function POST(
         { status: 401 }
       );
     }
-    
+
     // Parse the comment data from request body
     const { text } = await req.json();
-    
-    if (!text || text.trim() === '') {
+
+    if (typeof text !== 'string' || text.trim() === '') {
       return NextResponse.json(
-        { error: 'Comment text is required' },
+        { error: 'Comment text is required and must be a string' },
         { status: 400 }
       );
     }
-    
+
     // Create a new comment object
     const comment = {
       id: new ObjectId().toString(),
       text,
-      author: user && typeof user === 'object' && 'name' in user ? user.name : 'Anonymous',
+      author:
+        user && typeof user === 'object' && 'name' in user
+          ? user.name
+          : 'Anonymous',
       timestamp: new Date().toISOString(),
     };
-    
+
     // Connect to MongoDB
     const client = await clientPromise;
     const db = client.db('3rvision');
-    
+
     // Add the comment to the post's comments array
     await db.collection('posts').updateOne(
       { _id: new ObjectId(id) },
       { $push: { comments: comment } }
     );
-    
+
     // Return the new comment
     return NextResponse.json(comment);
   } catch (error) {

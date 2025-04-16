@@ -21,10 +21,10 @@ interface Post {
 
 export async function POST(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const { client, db } = await connectToDatabase();
 
     const result = await db.collection<Post>("posts").findOneAndUpdate(
