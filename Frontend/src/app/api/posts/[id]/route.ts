@@ -5,14 +5,17 @@ import { ObjectId } from 'mongodb';
 // GET /api/posts/[id] - Get a single post
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: any
 ) {
   try {
+    // Safely access params whether it's a Promise or not
+    const id = params && (params instanceof Promise ? (await params).id : params.id);
+    
     const client = await clientPromise;
     const db = client.db('3rvision');
     
     const post = await db.collection('posts').findOne({
-      _id: new ObjectId(params.id)
+      _id: new ObjectId(id)
     });
     
     if (!post) {
@@ -34,14 +37,17 @@ export async function GET(
 
 // PATCH /api/posts/[id] - Update a post (e.g., like a post)
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
+  req: Request,
+  { params }: any
 ) {
   try {
+    // Safely access params whether it's a Promise or not
+    const id = params && (params instanceof Promise ? (await params).id : params.id);
+    
     const client = await clientPromise;
     const db = client.db('3rvision');
     
-    const { action, userId, text } = await request.json();
+    const { action, userId, text } = await req.json();
     
     let updateOperation = {};
     
@@ -55,7 +61,7 @@ export async function PATCH(
       };
     } else if (action === 'addComment') {
       updateOperation = {
-        $inc: { comments: 1 },
+        $inc: { commentCount: 1 },
         $push: {
           commentList: {
             userId,
@@ -67,7 +73,7 @@ export async function PATCH(
     }
     
     const result = await db.collection('posts').updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       updateOperation
     );
     
@@ -86,4 +92,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-} 
+}

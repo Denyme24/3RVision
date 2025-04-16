@@ -5,18 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import {
-  FaImage,
-  FaTags,
-  FaThumbsUp,
-  FaComment,
-  FaShare,
-  FaFilter,
-  FaSearch,
-  FaUpload,
-  FaPlus,
-} from "react-icons/fa";
-import { IoMdClose } from "react-icons/io";
+import { FaSearch, FaPlus } from "react-icons/fa";
 import CreatePostModal from "@/components/CreatePostModal";
 import PostCard from "@/components/PostCard";
 import { useAuth } from "@/context/AuthContext";
@@ -46,29 +35,10 @@ interface Post {
   userVote?: number | null;
 }
 
-// Define the API response type
-interface ApiPost {
-  _id: string;
-  title: string;
-  description: string;
-  image?: string;
-  author: string;
-  timestamp: string;
-  likes: number;
-  comments: Comment[];
-  tags: string[];
-  postType?: "text" | "image" | "poll";
-  pollOptions?: { text: string; votes: number }[];
-  totalVotes?: number;
-  userVote?: number | null;
-}
-
-// Main Community Page component
 const CommunityPage = () => {
   const { user } = useAuth();
   const router = useRouter();
 
-  // Fix the redirect implementation
   useEffect(() => {
     if (!user) {
       router.push("/");
@@ -91,44 +61,13 @@ const CommunityPage = () => {
         if (!response.ok) throw new Error("Failed to fetch posts");
         const data = await response.json();
 
-        // Transform the data to match our Post interface
-        const transformedPosts = data.map((post: ApiPost) => {
-          // Ensure all required fields have default values and proper types
-          return {
-            _id: post._id || "",
-            title: post.title || "",
-            description: post.description || "",
-            image: post.image || "",
-            author: typeof post.author === "string" ? post.author : "Anonymous",
-            timestamp: post.timestamp || new Date().toISOString(),
-            likes: typeof post.likes === "number" ? post.likes : 0,
-            comments: Array.isArray(post.comments)
-              ? post.comments.map((comment) => ({
-                  id: comment.id || "",
-                  text: comment.text || "",
-                  author:
-                    typeof comment.author === "string"
-                      ? comment.author
-                      : "Anonymous",
-                  timestamp: comment.timestamp || new Date().toISOString(),
-                }))
-              : [],
-            tags: Array.isArray(post.tags) ? post.tags : [],
-            postType: post.postType || "text",
-            pollOptions: Array.isArray(post.pollOptions)
-              ? post.pollOptions.map((option) => ({
-                  text: option.text || "",
-                  votes: typeof option.votes === "number" ? option.votes : 0,
-                }))
-              : [],
-            totalVotes:
-              typeof post.totalVotes === "number" ? post.totalVotes : 0,
-            userVote: post.userVote !== undefined ? post.userVote : null,
-          };
-        });
+        const transformedPosts = data.map((post: Post) => ({
+          ...post,
+          comments: Array.isArray(post.comments) ? post.comments : [],
+        }));
 
         setPosts(transformedPosts);
-        // Extract unique tags from posts
+
         const uniqueTags = [
           ...new Set(transformedPosts.flatMap((post: Post) => post.tags)),
         ];
@@ -146,7 +85,6 @@ const CommunityPage = () => {
   // Handle creating a new post
   const handleCreatePost = async (postData: any) => {
     try {
-      // Make sure the author is included in the request
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: {
@@ -154,7 +92,7 @@ const CommunityPage = () => {
         },
         body: JSON.stringify({
           ...postData,
-          author: user?.name, // Ensure the author is set
+          author: user?.name,
         }),
       });
 
@@ -164,27 +102,40 @@ const CommunityPage = () => {
 
       const newPost = await response.json();
 
-      // Transform the new post to match Post interface
-      const transformedPost: Post = {
-        _id: newPost._id,
-        title: newPost.title || "",
-        description: newPost.description || "",
-        image: newPost.image || "",
-        author: newPost.author || "Anonymous",
-        timestamp: newPost.timestamp || new Date().toISOString(),
-        likes: newPost.likes || 0,
-        comments: Array.isArray(newPost.comments) ? newPost.comments : [],
-        tags: Array.isArray(newPost.tags) ? newPost.tags : [],
-        postType: newPost.postType || "text",
-        pollOptions: newPost.pollOptions || [],
-        totalVotes: newPost.totalVotes || 0,
-        userVote: newPost.userVote !== undefined ? newPost.userVote : null,
-      };
-
-      setPosts((prevPosts) => [transformedPost, ...prevPosts]);
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error creating post:", error);
+    }
+  };
+
+  // Handle adding a comment to a post
+  const handleCommentPost = async (postId: string, commentText: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: commentText }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to post comment");
+      }
+
+      const newComment = await response.json();
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId
+            ? { ...post, comments: [...post.comments, newComment] }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error("Error posting comment:", error);
     }
   };
 
@@ -210,100 +161,11 @@ const CommunityPage = () => {
     }
   });
 
-  // Handle like post
-  const handleLikePost = async (postId: string) => {
-    try {
-      const response = await fetch(`/api/posts/${postId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "like" }),
-      });
-
-      if (!response.ok) throw new Error("Failed to like post");
-
-      // Update the posts state
-      setPosts(
-        posts.map((post) =>
-          post._id === postId ? { ...post, likes: post.likes + 1 } : post
-        )
-      );
-    } catch (error) {
-      console.error("Error liking post:", error);
-    }
-  };
-
-  // Handle comment on post
-  const handleCommentPost = async (postId: string, comment: string) => {
-    try {
-      const response = await fetch(`/api/posts/${postId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "addComment",
-          text: comment,
-          userId: "user123", // This would come from authentication
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to add comment");
-
-      // Create a new comment object
-      const newComment = {
-        id: Date.now().toString(),
-        text: comment,
-        author: "You", // This would come from authentication
-        timestamp: new Date().toISOString(),
-      };
-
-      // Update the posts state
-      setPosts(
-        posts.map((post) =>
-          post._id === postId
-            ? { ...post, comments: [...post.comments, newComment] }
-            : post
-        )
-      );
-    } catch (error) {
-      console.error("Error commenting on post:", error);
-    }
-  };
-
-  const handleComment = (postId: string, newComment: any) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post._id === postId) {
-          // Make sure comments is initialized as an array
-          const currentComments = Array.isArray(post.comments)
-            ? post.comments
-            : [];
-          return {
-            ...post,
-            comments: [...currentComments, newComment],
-          };
-        }
-        return post;
-      })
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <Navbar />
 
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-green-50/50 to-white/50" />
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
-        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-green-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
-      </div>
-
       <main className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -319,7 +181,6 @@ const CommunityPage = () => {
           </p>
         </motion.div>
 
-        {/* Filters and Search Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -366,7 +227,6 @@ const CommunityPage = () => {
             </div>
           </div>
 
-          {/* Tags */}
           <div className="mt-4 flex flex-wrap gap-2">
             {tags.map((tag) => (
               <motion.button
@@ -392,7 +252,6 @@ const CommunityPage = () => {
           </div>
         </motion.div>
 
-        {/* Posts Grid */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
@@ -413,7 +272,12 @@ const CommunityPage = () => {
               >
                 <PostCard
                   post={post}
-                  onLike={handleLikePost}
+                  onLike={(postId) => {
+                    const updatedPosts = posts.map((p) =>
+                      p._id === postId ? { ...p, likes: p.likes + 1 } : p
+                    );
+                    setPosts(updatedPosts);
+                  }}
                   onComment={handleCommentPost}
                 />
               </motion.div>
