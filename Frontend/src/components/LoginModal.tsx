@@ -28,20 +28,29 @@ const LoginModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError(""); // Clear previous errors
 
     try {
-      await login(email, password);
-      setIsLoading(false);
-      onClose();
+      // Call the login function from the context
+      const result = await login(email, password);
 
-      // Call onSuccess if provided
-      if (onSuccess) {
-        onSuccess();
+      if (result.success) {
+        // Login successful
+        setIsLoading(false);
+        onClose();
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        // Login failed, use the error message from the context
+        setIsLoading(false);
+        setError(result.error || "Login not successful"); // Use the error from context or a default
       }
     } catch (err) {
+      // Catch unexpected errors during the login call itself
       setIsLoading(false);
-      setError("Invalid email or password");
+      console.error("Unexpected login error:", err); // Log the actual error
+      setError("An unexpected error occurred during login."); // Generic message for unexpected issues
     }
   };
 
@@ -60,6 +69,7 @@ const LoginModal = ({
             exit={{ scale: 0.9, y: 20 }}
             className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
           >
+            {/* All modal content should be inside this div */}
             <div className="relative p-6">
               <button
                 onClick={onClose}
@@ -88,6 +98,7 @@ const LoginModal = ({
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* ... form inputs ... */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                     <FaEnvelope />
@@ -176,9 +187,11 @@ const LoginModal = ({
                   </button>
                 </p>
               </div>
-            </div>
-          </motion.div>
-        </motion.div>
+            </div>{" "}
+            {/* End of modal content div */}
+          </motion.div>{" "}
+          {/* End of inner motion.div */}
+        </motion.div> /* End of outer motion.div */
       )}
     </AnimatePresence>
   );
