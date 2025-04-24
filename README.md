@@ -93,7 +93,7 @@ go run main.go
 ### Run ML model
 ```bash
 cd ml
-python3.10 -m venv myenv
+py -3.10 -m venv myenv
 source myenv/bin/activate  # For macOS/Linux
 # OR
 myenv\Scripts\activate  # For Windows
