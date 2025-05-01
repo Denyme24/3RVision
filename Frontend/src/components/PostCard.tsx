@@ -24,10 +24,11 @@ interface Post {
   userId?: string; // Add this property to the Post interface
   comments: Comment[];
   tags: string[];
-  postType?: "text" | "image" | "poll";
+  postType?: "text" | "image" | "poll" | "link";
   pollOptions?: { text: string; votes: number }[];
   totalVotes?: number;
   userVote?: number | null;
+  linkUrl?: string;
 }
 
 interface PostCardProps {
@@ -72,35 +73,10 @@ const PostCard = ({ post, onLike, onComment, onVote }: PostCardProps) => {
     if (!commentText.trim()) return;
 
     try {
-      const response = await fetch(`/api/posts/${post._id}/comment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: commentText,
-        }), // We only need to send the text; the API will get author from token
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to post comment");
-      }
-
-      const newComment = await response.json();
-
-      // Update the local state to show the new comment immediately
-      const updatedComments = [...(post.comments || []), newComment];
-      post.comments = updatedComments;
-
-      // Call the parent component's callback
-      onComment(post._id, newComment);
-
-      // Clear the input field
+      await onComment(post._id, commentText);
       setCommentText("");
     } catch (error) {
       console.error("Error commenting on post:", error);
-      alert("Failed to post comment. Please try again.");
     }
   };
 
@@ -229,6 +205,20 @@ const PostCard = ({ post, onLike, onComment, onVote }: PostCardProps) => {
         <p className="mt-2 text-gray-600">{post.description}</p>
       </div>
 
+      {/* Link Section */}
+      {post.postType === "link" && post.linkUrl && (
+        <div className="px-4 py-2">
+          <a
+            href={post.linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline break-all"
+          >
+            {post.linkUrl}
+          </a>
+        </div>
+      )}
+
       {/* Post Image */}
       {post.image && (
         <div className="mt-4 relative h-64">
@@ -345,14 +335,33 @@ const PostCard = ({ post, onLike, onComment, onVote }: PostCardProps) => {
               {comments.map((comment, index) => (
                 <div
                   key={comment.id || index}
-                  className="bg-gray-50 p-2 rounded-lg"
+                  className="bg-gray-50 p-3 rounded-lg"
                 >
-                  <p className="text-sm font-medium text-green-500">
-                    {comment.author || user?.name || "User"}
-                  </p>
-                  <p className="text-sm text-gray-600">{comment.text}</p>
+                  <div className="flex items-start">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                      <span className="text-xs font-medium text-green-700">
+                        {(comment.author?.[0] || "U").toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-green-600 mb-1">
+                        {comment.author || "Anonymous"}
+                      </p>
+                      <p className="text-sm text-gray-700">{comment.text}</p>
+                      {comment.timestamp && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatTimestamp(comment.timestamp)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
+              {comments.length === 0 && (
+                <p className="text-sm text-gray-500 italic text-center py-2">
+                  No comments yet. Be the first to comment!
+                </p>
+              )}
             </div>
           </div>
         </div>

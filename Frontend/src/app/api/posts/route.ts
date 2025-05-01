@@ -1,23 +1,28 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers'; // Add this import
-import { verifyToken } from '@/lib/jwt'; // Add this import (assuming you have this function)
+import { cookies } from 'next/headers'; 
+import { verifyToken } from '@/lib/jwt'; 
 
 // GET /api/posts - Get all posts
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db('3rvision');
+    const db = client.db('3RVision');
     
-    const posts = await db.collection('posts')
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray();
+    // Use "Community" collection instead of "posts"
+    const posts = await db.collection('Community').find({}).sort({ timestamp: -1 }).toArray();
     
-    return NextResponse.json(posts);
+    // Ensure all posts have the required fields
+    const formattedPosts = posts.map(post => ({
+      ...post,
+      postType: post.postType || "text",
+      linkUrl: post.linkUrl || "",
+    }));
+    
+    return NextResponse.json(formattedPosts);
   } catch (error) {
-    console.error('Error fetching posts:', error);
+    console.error('Error fetching posts:', error); 
     return NextResponse.json(
       { error: 'Failed to fetch posts' },
       { status: 500 }
@@ -26,7 +31,7 @@ export async function GET() {
 }
 
 // POST /api/posts - Create a new post
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     // Get user from JWT token in cookies
     const cookieStore = await cookies();
@@ -42,25 +47,45 @@ export async function POST(req: Request) {
       }
     }
     
-    const userData = await req.json();
+    const userData = await request.json();
     
-    // Ensure the author field is set from the authenticated user
+    // Ensure all required fields are present
     const postData = {
-      ...userData,
+      title: userData.title || "",
+      description: userData.description || "",
+      image: userData.image || "",
       author: (user && typeof user === 'object' && 'name' in user ? user.name : undefined) || userData.author || "Anonymous",
-      timestamp: new Date().toISOString(),
+      timestamp: userData.timestamp || new Date().toISOString(),
+      likes: userData.likes || 0,
+      comments: Array.isArray(userData.comments) ? userData.comments : [],
+      tags: Array.isArray(userData.tags) ? userData.tags : [],
+      postType: userData.postType || "text",
+      linkUrl: userData.linkUrl || "",
     };
     
     const client = await clientPromise;
-    const db = client.db('3rvision');
+    const db = client.db('3RVision');
     
-    // Insert post into database
-    const result = await db.collection('posts').insertOne(postData);
+    // Insert post into Community collectionsss
+    const result = await db.collection('Community').insertOne(postData);
     
-    // Return the created post with its ID
+    // Get the complete post document to return
+    const insertedPost = await db.collection('Community').findOne({ _id: result.insertedId });
+    
+    if (!insertedPost) {
+      throw new Error("Failed to retrieve inserted post");
+    }
+    
+    // Ensure all fields are included in the response
+    const responsePost = {
+      ...insertedPost,
+      postType: insertedPost.postType || postData.postType || "text",
+      linkUrl: insertedPost.linkUrl || postData.linkUrl || "",
+    };
+    
     return NextResponse.json({
-      ...postData,
-      _id: result.insertedId
+      success: true,
+      post: responsePost
     });
   } catch (error) {
     console.error('Error creating post:', error);

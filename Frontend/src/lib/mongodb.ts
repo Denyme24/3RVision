@@ -9,20 +9,12 @@ const getMongoURI = (): string => {
     return configuredURI;
   }
   
-  // Check if running in Docker (using Docker's special hostname)
-  const isDocker = process.env.IS_DOCKER === 'true' || 
-                  process.env.HOSTNAME?.includes('docker');
-  
-  // Provide default values if no URI is configured
-  if (isDocker) {
-    return 'mongodb://host.docker.internal:27017/3rvision';
-  } else {
-    return 'mongodb://localhost:27017/3rvision';
-  }
+  // Default to MongoDB Atlas URI if no environment variable is set
+  return 'mongodb+srv://rajnaman488:namanraj24@nextapp-cluster.iikn9.mongodb.net/?retryWrites=true&w=majority&appName=NextApp-Cluster';
 };
 
 const uri = getMongoURI();
-const dbName = process.env.MONGODB_DB || '3rvision';
+const dbName = process.env.MONGODB_DB || '3RVision';
 
 // Connection options with better defaults for reliability
 const options = {
@@ -41,8 +33,7 @@ let client;
 let clientPromise: Promise<MongoClient>;
 
 // Log connection info without exposing credentials
-console.log(`Connecting to MongoDB${uri.includes('localhost') ? ' (localhost)' : 
-  uri.includes('host.docker.internal') ? ' (Docker)' : ' (remote)'}`);
+console.log(`Connecting to MongoDB ${uri.includes('mongodb+srv') ? '(Atlas)' : uri.includes('localhost') ? '(localhost)' : 'remote'}`);
 
 if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value

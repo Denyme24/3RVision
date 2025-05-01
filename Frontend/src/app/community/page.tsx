@@ -9,6 +9,7 @@ import { FaSearch, FaPlus } from "react-icons/fa";
 import CreatePostModal from "@/components/CreatePostModal";
 import PostCard from "@/components/PostCard";
 import { useAuth } from "@/context/AuthContext";
+import { Suspense } from "react";
 
 // Define the Comment type
 interface Comment {
@@ -29,15 +30,22 @@ interface Post {
   likes: number;
   comments: Comment[];
   tags: string[];
-  postType?: "text" | "image" | "poll";
+  postType?: "text" | "image" | "poll" | "link";
   pollOptions?: { text: string; votes: number }[];
   totalVotes?: number;
   userVote?: number | null;
+  linkUrl?: string;
 }
 
 const CommunityPage = () => {
   const { user } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Only render content after component is mounted (client-side)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -55,22 +63,35 @@ const CommunityPage = () => {
 
   // Fetch posts from API
   useEffect(() => {
+    if (!mounted) return;
+
     const fetchPosts = async () => {
       try {
         const response = await fetch("/api/posts");
         if (!response.ok) throw new Error("Failed to fetch posts");
         const data = await response.json();
 
-        const transformedPosts = data.map((post: Post) => ({
-          ...post,
+        // Ensure posts have the expected structure
+        const transformedPosts = data.map((post: any) => ({
+          _id: post._id || "",
+          title: post.title || "",
+          description: post.description || "",
+          image: post.image || "",
+          author: post.author || "Anonymous",
+          timestamp: post.timestamp || new Date().toISOString(),
+          likes: post.likes || 0,
           comments: Array.isArray(post.comments) ? post.comments : [],
+          tags: Array.isArray(post.tags) ? post.tags : [],
+          postType: post.postType || "text",
+          linkUrl: post.linkUrl || "",
         }));
 
         setPosts(transformedPosts);
 
         const uniqueTags = [
-          ...new Set(transformedPosts.flatMap((post: Post) => post.tags)),
-        ];
+          ...new Set(transformedPosts.flatMap((post: Post) => post.tags || [])),
+        ].filter(Boolean); // Filter out undefined/null tags
+
         setTags(uniqueTags as string[]);
         setLoading(false);
       } catch (error) {
@@ -80,7 +101,7 @@ const CommunityPage = () => {
     };
 
     fetchPosts();
-  }, []);
+  }, [mounted]);
 
   // Handle creating a new post
   const handleCreatePost = async (postData: any) => {
@@ -92,7 +113,10 @@ const CommunityPage = () => {
         },
         body: JSON.stringify({
           ...postData,
-          author: user?.name,
+          author: user?.name || "Anonymous",
+          timestamp: new Date().toISOString(),
+          likes: 0,
+          comments: [],
         }),
       });
 
@@ -100,9 +124,29 @@ const CommunityPage = () => {
         throw new Error("Failed to create post");
       }
 
-      const newPost = await response.json();
+      const result = await response.json();
 
-      setPosts((prevPosts) => [newPost, ...prevPosts]);
+      // If the API returns the post data inside a 'post' property
+      const newPost = result.post || result;
+
+      // Make sure the post has all required fields
+      const formattedPost: Post = {
+        _id: newPost._id,
+        title: newPost.title || postData.title || "",
+        description: newPost.description || postData.description || "",
+        author: newPost.author || user?.name || "Anonymous",
+        timestamp: newPost.timestamp || new Date().toISOString(),
+        likes: newPost.likes || 0,
+        comments: Array.isArray(newPost.comments) ? newPost.comments : [],
+        tags: Array.isArray(newPost.tags) ? newPost.tags : postData.tags || [],
+        image: newPost.image || postData.image || "",
+        postType: newPost.postType || "text",
+        linkUrl: newPost.linkUrl || "",
+      };
+
+      console.log("New post created:", formattedPost);
+
+      setPosts((prevPosts) => [formattedPost, ...prevPosts]);
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error creating post:", error);
@@ -125,14 +169,27 @@ const CommunityPage = () => {
         throw new Error(errorData.error || "Failed to post comment");
       }
 
-      const newComment = await response.json();
+      const data = await response.json();
 
+      // Update posts array with the new comment from the API response
       setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, comments: [...post.comments, newComment] }
-            : post
-        )
+        prevPosts.map((post) => {
+          if (post._id === postId) {
+            // Check if comment with this ID already exists to avoid duplicates
+            const existingComment = post.comments.find(
+              (c) => c.id === data.comment.id
+            );
+            if (existingComment) {
+              return post; // Comment already exists, don't add it again
+            }
+
+            return {
+              ...post,
+              comments: [...(post.comments || []), data.comment],
+            };
+          }
+          return post;
+        })
       );
     } catch (error) {
       console.error("Error posting comment:", error);
@@ -141,13 +198,17 @@ const CommunityPage = () => {
 
   // Filter posts based on search query and selected tags
   const filteredPosts = posts.filter((post) => {
+    // Add null checks before calling toLowerCase()
+    const postTitle = post.title || "";
+    const postDescription = post.description || "";
+
     const matchesSearch =
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.description.toLowerCase().includes(searchQuery.toLowerCase());
+      postTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      postDescription.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesTags =
       selectedTags.length === 0 ||
-      selectedTags.some((tag) => post.tags.includes(tag));
+      selectedTags.some((tag) => post.tags?.includes(tag));
 
     return matchesSearch && matchesTags;
   });
@@ -160,6 +221,21 @@ const CommunityPage = () => {
       return b.likes - a.likes;
     }
   });
+
+  // If not mounted yet, don't render the full component to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+        <Navbar />
+        <main className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">

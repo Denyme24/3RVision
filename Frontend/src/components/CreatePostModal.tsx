@@ -127,21 +127,28 @@ const CreatePostModal = ({
     setIsSubmitting(true);
 
     try {
-      // Create post data object
+      // Process tags properly
+      const formattedTags = tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+      // Create post data object with complete structure
       const postData = {
         title,
-        description,
-        tags: tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
-        platformUsage,
+        description: postType === "text" ? description : platformUsage,
+        tags: formattedTags,
         category,
         postType,
         linkUrl: postType === "link" ? linkUrl : undefined,
         image: imagePreview,
-        author: user?.name || "Anonymous", // Make sure it's not undefined
+        author: user?.name || "Anonymous",
+        timestamp: new Date().toISOString(), // Add explicit timestamp
+        likes: 0, // Initialize likes count
+        comments: [], // Initialize empty comments array
       };
+
+      console.log("Submitting post data:", postData);
 
       // Submit post to API
       await onSubmit(postData);

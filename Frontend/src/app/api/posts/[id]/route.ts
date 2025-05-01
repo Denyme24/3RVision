@@ -12,9 +12,10 @@ export async function GET(
     const id = params && (params instanceof Promise ? (await params).id : params.id);
     
     const client = await clientPromise;
-    const db = client.db('3rvision');
+    const db = client.db('3RVision');
     
-    const post = await db.collection('posts').findOne({
+    // Use Community collection instead of posts
+    const post = await db.collection('Community').findOne({
       _id: new ObjectId(id)
     });
     
@@ -45,7 +46,7 @@ export async function PATCH(
     const id = params && (params instanceof Promise ? (await params).id : params.id);
     
     const client = await clientPromise;
-    const db = client.db('3rvision');
+    const db = client.db('3RVision');
     
     const { action, userId, text } = await req.json();
     
@@ -72,7 +73,8 @@ export async function PATCH(
       };
     }
     
-    const result = await db.collection('posts').updateOne(
+    // Use Community collection instead of posts
+    const result = await db.collection('Community').updateOne(
       { _id: new ObjectId(id) },
       updateOperation
     );
