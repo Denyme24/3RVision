@@ -72,24 +72,19 @@ const CommunityPage = () => {
         const data = await response.json();
 
         // Ensure posts have the expected structure
-        const transformedPosts = data.map((post: any) => {
-          console.log("Raw post data:", post); // Debug log
-          const transformed = {
-            _id: post._id || "",
-            title: post.title || "",
-            description: post.description || "",
-            image: post.image || "",
-            author: post.author || "Anonymous",
-            timestamp: post.timestamp || new Date().toISOString(),
-            likes: post.likes || 0,
-            comments: Array.isArray(post.comments) ? post.comments : [],
-            tags: Array.isArray(post.tags) ? post.tags : [],
-            postType: post.postType || "text",
-            linkUrl: post.linkUrl || "",
-          };
-          console.log("Transformed post:", transformed); // Debug log
-          return transformed;
-        });
+        const transformedPosts = data.map((post: any) => ({
+          _id: post._id || "",
+          title: post.title || "",
+          description: post.description || "",
+          image: post.image || "",
+          author: post.author || "Anonymous",
+          timestamp: post.timestamp || new Date().toISOString(),
+          likes: post.likes || 0,
+          comments: Array.isArray(post.comments) ? post.comments : [],
+          tags: Array.isArray(post.tags) ? post.tags : [],
+          postType: post.postType || "text",
+          linkUrl: post.linkUrl || "",
+        }));
 
         setPosts(transformedPosts);
 
@@ -145,10 +140,11 @@ const CommunityPage = () => {
         comments: Array.isArray(newPost.comments) ? newPost.comments : [],
         tags: Array.isArray(newPost.tags) ? newPost.tags : postData.tags || [],
         image: newPost.image || postData.image || "",
-        postType: newPost.postType || postData.postType || "text",
-        linkUrl: newPost.linkUrl || postData.linkUrl || "",
+        postType: newPost.postType || "text",
+        linkUrl: newPost.linkUrl || "",
       };
-      console.log("Formatted new post:", formattedPost); // Debug log
+
+      console.log("New post created:", formattedPost);
 
       setPosts((prevPosts) => [formattedPost, ...prevPosts]);
       setIsModalOpen(false);

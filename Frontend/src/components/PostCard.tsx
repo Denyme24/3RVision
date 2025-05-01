@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaHeart, FaComment, FaShare, FaEllipsisH } from "react-icons/fa";
 import Image from "next/image";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext"; // Add this import
 
 interface Comment {
   id: string;
@@ -47,10 +47,10 @@ const PostCard = ({ post, onLike, onComment, onVote }: PostCardProps) => {
   const [mounted, setMounted] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes);
 
+  // Set mounted state after component mounts to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
-    console.log("PostCard received post:", post); // Debug log
-  }, [post]);
+  }, []);
 
   const handleLike = async () => {
     try {
@@ -203,19 +203,21 @@ const PostCard = ({ post, onLike, onComment, onVote }: PostCardProps) => {
       <div className="px-4">
         <h2 className="text-xl font-semibold text-gray-900">{post.title}</h2>
         <p className="mt-2 text-gray-600">{post.description}</p>
-        {post.postType === "link" && post.linkUrl && (
-          <div className="mt-2">
-            <a
-              href={post.linkUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 hover:underline break-all"
-            >
-              {post.linkUrl}
-            </a>
-          </div>
-        )}
       </div>
+
+      {/* Link Section */}
+      {post.postType === "link" && post.linkUrl && (
+        <div className="px-4 py-2">
+          <a
+            href={post.linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline break-all"
+          >
+            {post.linkUrl}
+          </a>
+        </div>
+      )}
 
       {/* Post Image */}
       {post.image && (
