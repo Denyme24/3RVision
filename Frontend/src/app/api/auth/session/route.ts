@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     // Connect to database
     const { db } = await connectToDatabase();
     
-    // Find user by ID (without returning the password)
-    const user = await db.collection('users').findOne(
+    // Find user by ID in Authentication collection (without returning the password)
+    const user = await db.collection('Authentication').findOne(
       { _id: new ObjectId(payload.userId) },
       { projection: { password: 0 } }
     );

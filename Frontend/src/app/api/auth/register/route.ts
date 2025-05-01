@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
 
     // Connect to database
     const { db } = await connectToDatabase();
-    const users = db.collection('users');
+    // Use Authentication collection instead of users
+    const users = db.collection('Authentication');
 
     // Check if user already exists
     const existingUser = await users.findOne({ email: email.toLowerCase() });

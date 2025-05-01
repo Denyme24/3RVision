@@ -1,77 +1,92 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { verifyToken } from '@/lib/jwt';
+import { NextResponse } from "next/server";
+import { MongoClient, ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/jwt";
 
-// Using type assertion to satisfy the type checker
+// MongoDB connection function
+async function connectToDatabase() {
+  const uri = process.env.MONGODB_URI ;
+  if (!uri) {
+    throw new Error("MONGODB_URI is not defined");
+  }
+  const client = await MongoClient.connect(uri);
+  const db = client.db("3RVision");
+  return { client, db };
+}
+
+// Define the Comment interface
+interface Comment {
+  id: string;
+  text: string;
+  author: string;
+  timestamp: string;
+}
+
 export async function POST(
-  req: Request,
-  { params }: any
+  request: Request,
+  { params }: { params: any }
 ) {
   try {
     // Safely access params whether it's a Promise or not
     const id = params && (params instanceof Promise ? (await params).id : params.id);
+    const { text } = await request.json();
 
-    // Get cookies with await
+    // Get user from JWT token
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
-
-    let user = null;
+    
+    // Default author
+    let author = "Anonymous";
+    
     if (token) {
       try {
-        user = verifyToken(token);
+        const userData = verifyToken(token);
+        if (typeof userData !== 'string' && userData && 'name' in userData) {
+          author = userData.name as string;
+        }
       } catch (error) {
         console.error('Invalid token:', error);
-        return NextResponse.json(
-          { error: 'Authentication required' },
-          { status: 401 }
-        );
       }
-    } else {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
     }
 
-    // Parse the comment data from request body
-    const { text } = await req.json();
-
-    if (typeof text !== 'string' || text.trim() === '') {
-      return NextResponse.json(
-        { error: 'Comment text is required and must be a string' },
-        { status: 400 }
-      );
-    }
-
-    // Create a new comment object
-    const comment = {
+    // Create comment
+    const comment: Comment = {
       id: new ObjectId().toString(),
       text,
-      author:
-        user && typeof user === 'object' && 'name' in user
-          ? user.name
-          : 'Anonymous',
-      timestamp: new Date().toISOString(),
+      author,
+      timestamp: new Date().toISOString()
     };
 
-    // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db('3rvision');
+    // Connect to database
+    const { client, db } = await connectToDatabase();
 
-    // Add the comment to the post's comments array
-    await db.collection('posts').updateOne(
-      { _id: new ObjectId(id) },
-      { $push: { comments: comment } }
-    );
+    try {
+      // Add comment to post in Community collection
+      const result = await db.collection("Community").findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $push: { comments: comment as any } },
+        { returnDocument: "after" }
+      );
 
-    // Return the new comment
-    return NextResponse.json(comment);
+      if (!result) {
+        return NextResponse.json(
+          { error: "Post not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        comment,
+        post: result
+      });
+    } finally {
+      await client.close();
+    }
   } catch (error) {
-    console.error('Error posting comment:', error);
+    console.error("Error adding comment:", error);
     return NextResponse.json(
-      { error: 'Failed to post comment' },
+      { error: "Failed to add comment" },
       { status: 500 }
     );
   }

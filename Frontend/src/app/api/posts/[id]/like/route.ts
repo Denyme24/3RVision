@@ -3,12 +3,12 @@ import { MongoClient, ObjectId } from "mongodb";
 
 // MongoDB connection function
 async function connectToDatabase() {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI ;
   if (!uri) {
     throw new Error("MONGODB_URI is not defined");
   }
   const client = await MongoClient.connect(uri);
-  const db = client.db("3rvision");
+  const db = client.db("3RVision");
   return { client, db };
 }
 
@@ -25,28 +25,34 @@ export async function POST(
 ) {
   try {
     const { id } = await context.params;
+
+    // Connect to the database
     const { client, db } = await connectToDatabase();
 
-    const result = await db.collection<Post>("posts").findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $inc: { likes: 1 } },
-      { returnDocument: "after" }
-    );
-
-    if (!result.value) {
-      await client.close();
-      return NextResponse.json(
-        { error: "Post not found" },
-        { status: 404 }
+    try {
+      // Update the post's likes count in the Community collection
+      const result = await db.collection("Community").findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $inc: { likes: 1 } },
+        { returnDocument: "after" }
       );
+
+      await client.close();
+
+      if (!result) {
+        return NextResponse.json(
+          { error: "Post not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        post: result,
+      });
+    } finally {
+      await client.close();
     }
-
-    await client.close();
-
-    return NextResponse.json({
-      _id: result.value._id.toString(),
-      likes: result.value.likes,
-    });
   } catch (error) {
     console.error("Error liking post:", error);
     return NextResponse.json(
