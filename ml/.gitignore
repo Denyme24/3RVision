@@ -1,3 +1,5 @@
 .venv
 3RVision_2.keras
 static/uploads/*
+myenv/
+venv/
