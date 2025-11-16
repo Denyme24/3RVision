@@ -70,7 +70,7 @@ for cls in class_names:
 # --- End NEW Mapping ---
 
 # Path to the model
-MODEL_PATH = '3RVision_2 (1).keras'
+MODEL_PATH = os.getenv('MODEL_PATH', 'model.keras')
 
 # Load the actual Keras model
 try:

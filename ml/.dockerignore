@@ -1,0 +1,15 @@
+venv/
+myenv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.env.*
+.git
+.gitignore
+README.md
+*.md
+.DS_Store
+
