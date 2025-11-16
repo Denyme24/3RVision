@@ -37,7 +37,7 @@ six==1.17.0
 tensorboard==2.18.0
 tensorboard-data-server==0.7.2
 tensorflow==2.18.0
-tensorflow_intel==2.18.0
+# tensorflow_intel==2.18.0  # Windows-only, not needed for Linux Docker
 tensorflow-io-gcs-filesystem==0.31.0
 termcolor==3.0.1
 typing_extensions==4.13.2

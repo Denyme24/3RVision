@@ -3,15 +3,6 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-// Check if API key is available
-if (!process.env.GEMINI_API_KEY) {
-  console.error('GEMINI_API_KEY is not defined in environment variables');
-  throw new Error('Missing Gemini API key');
-}
-
-// Use environment variable instead of hardcoded key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 // Load the bot instructions from the MD file
 const getBotInstructions = () => {
   // Read the file from the public directory
@@ -22,8 +13,20 @@ const getBotInstructions = () => {
 
 export async function POST(req: Request) {
   try {
-    const { prompt, image, audio } = await req.json();
+    // Check if API key is available (at runtime, not build time)
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is not defined in environment variables');
+      return NextResponse.json(
+        { error: 'Missing Gemini API key' },
+        { status: 500 }
+      );
+    }
+
+    // Initialize Gemini client at runtime
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    
+    const { prompt, image, audio } = await req.json();
     
     // Get the bot instructions
     const instructions = getBotInstructions();
