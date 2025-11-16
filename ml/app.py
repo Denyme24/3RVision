@@ -69,8 +69,25 @@ for cls in class_names:
         functional_categories_map[cls] = ['Check Local Guidelines']
 # --- End NEW Mapping ---
 
-# Path to the model
-MODEL_PATH = os.getenv('MODEL_PATH', 'model.keras')
+# Path to the model - try multiple locations for compatibility
+def get_model_path():
+    # First, check environment variable
+    env_path = os.getenv('MODEL_PATH')
+    if env_path and os.path.exists(env_path):
+        return env_path
+    
+    # Try Docker path (model.keras)
+    if os.path.exists('model.keras'):
+        return 'model.keras'
+    
+    # Try local development path (original filename)
+    if os.path.exists('3RVision_2 (1).keras'):
+        return '3RVision_2 (1).keras'
+    
+    # Default fallback
+    return 'model.keras'
+
+MODEL_PATH = get_model_path()
 
 # Load the actual Keras model
 try:
@@ -110,13 +127,13 @@ def preprocess_image(image_path, target_size=(224, 224)):
 def index():
     return render_template('index.html')
 
-@app.route('/ml-results/<filename>', methods=['GET'])
+@app.route('/ml/ml-results/<filename>', methods=['GET'])
 def get_ml_results(filename):
     if filename in ml_results_store:
         return jsonify(ml_results_store[filename])
     return jsonify({'error': 'ML results not found'}), 404
 
-@app.route('/upload', methods=['POST'])
+@app.route('/ml/upload', methods=['POST'])
 def upload_file():
     print("Upload endpoint hit")
     

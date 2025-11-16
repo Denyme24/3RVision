@@ -13,6 +13,7 @@ import SignupModal from "./SignupModal";
 import { useRouter } from "next/navigation";
 import AnalysisResultModal from "./AnalysisResultModal";
 import EcoLoader from "./EcoLoader";
+import { getBackendUrl, getMLUrl } from "@/config/api";
 
 interface AnalysisResult {
   imageUrl: string;
@@ -195,7 +196,7 @@ const HeroSection = () => {
       // Send to Go Server (S3 upload)
       const goFormData = new FormData();
       goFormData.append("image", blob, "captured.jpg");
-      const goUploadResponse = await fetch("http://localhost:8080/upload", {
+      const goUploadResponse = await fetch(getBackendUrl("/api/upload"), {
         method: "POST",
         body: goFormData,
       });
@@ -204,7 +205,7 @@ const HeroSection = () => {
       // Send to Flask Server
       const flaskFormData = new FormData();
       flaskFormData.append("file", blob, "captured.jpg");
-      const flaskResponse = await fetch("http://127.0.0.1:5001/upload", {
+      const flaskResponse = await fetch(getMLUrl("/ml/upload"), {
         method: "POST",
         body: flaskFormData,
       });
@@ -213,7 +214,7 @@ const HeroSection = () => {
       // Get advanced analysis
       const goAnalyzeForm = new FormData();
       goAnalyzeForm.append("image", blob);
-      const goAnalyzeResponse = await fetch("http://localhost:8080/analyze", {
+      const goAnalyzeResponse = await fetch(getBackendUrl("/api/analyze"), {
         method: "POST",
         body: goAnalyzeForm,
       });
@@ -289,7 +290,7 @@ const HeroSection = () => {
       // Send to Go Server (S3 upload)
       const goFormData = new FormData();
       goFormData.append("image", file);
-      const goUploadResponse = await fetch("http://localhost:8080/upload", {
+      const goUploadResponse = await fetch(getBackendUrl("/api/upload"), {
         method: "POST",
         body: goFormData,
       });
@@ -298,7 +299,7 @@ const HeroSection = () => {
       // Send to Flask Server
       const flaskFormData = new FormData();
       flaskFormData.append("file", file);
-      const flaskResponse = await fetch("http://127.0.0.1:5001/upload", {
+      const flaskResponse = await fetch(getMLUrl("/ml/upload"), {
         method: "POST",
         body: flaskFormData,
       });
@@ -307,7 +308,7 @@ const HeroSection = () => {
       // Get advanced analysis
       const goAnalyzeForm = new FormData();
       goAnalyzeForm.append("image", file);
-      const goAnalyzeResponse = await fetch("http://localhost:8080/analyze", {
+      const goAnalyzeResponse = await fetch(getBackendUrl("/api/analyze"), {
         method: "POST",
         body: goAnalyzeForm,
       });
@@ -351,7 +352,7 @@ const HeroSection = () => {
       // Send to Go Server for analysis
       const goAnalyzeForm = new FormData();
       goAnalyzeForm.append("image", blob);
-      const goAnalyzeResponse = await fetch("http://localhost:8080/analyze", {
+      const goAnalyzeResponse = await fetch(getBackendUrl("/api/analyze"), {
         method: "POST",
         body: goAnalyzeForm,
       });

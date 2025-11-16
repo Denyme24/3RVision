@@ -103,10 +103,10 @@ func main() {
 	})
 
 	// Regular upload endpoint (stores in S3)
-	r.POST("/upload", handleUpload)
+	r.POST("/api/upload", handleUpload)
 
 	// Analysis endpoint (uses Gemini)
-	r.POST("/analyze", handleAnalyze)
+	r.POST("/api/analyze", handleAnalyze)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -289,8 +289,15 @@ func getCategoriesFromFlask(imageData []byte) (*FlaskResponse, error) {
 	}
 
 	// Send request to Flask server
+	mlServerURL := os.Getenv("ML_SERVER_URL")
+	if mlServerURL == "" {
+		mlServerURL = os.Getenv("FLASK_SERVER_URL") // Fallback for backward compatibility
+	}
+	if mlServerURL == "" {
+		return nil, fmt.Errorf("ML_SERVER_URL or FLASK_SERVER_URL environment variable not set")
+	}
 	resp, err := http.Post(
-		os.Getenv("FLASK_SERVER_URL")+"/analyze",
+		mlServerURL+"/ml/upload",
 		writer.FormDataContentType(),
 		body,
 	)
