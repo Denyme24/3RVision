@@ -23,7 +23,7 @@ const getBotInstructions = () => {
 export async function POST(req: Request) {
   try {
     const { prompt, image, audio } = await req.json();
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     
     // Get the bot instructions
     const instructions = getBotInstructions();
