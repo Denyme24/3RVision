@@ -51,10 +51,10 @@ In today's consumer-driven world, we face several critical challenges:
 
 | Category      | Technologies                                                                 |
 |---------------|-------------------------------------------------------------------------------|
-| **Frontend**  | Next.js 15.2.4, React 19, TypeScript, TailwindCSS, Framer Motion, Three.js    |
-| **Backend**   | Go (Golang), Gin Web Framework, AWS S3, MongoDB                               |
+| **Frontend**  | Next.js 15.2.4, React 19, TypeScript, TailwindCSS, Framer Motion, Three.js , Docker   |
+| **Backend**   | Go (Golang), Gin Web Framework, AWS S3, MongoDB , Docker                              |
 | **Extension** | JavaScript, Chrome Extension Manifest V3, Content Scripts                     |
-| **ML Component** | Python, Computer Vision Models, Flask Server                               |
+| **ML Component** | Python, Computer Vision Models, Flask Server , Docker                              |
 
 
 
