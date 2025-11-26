@@ -302,7 +302,7 @@ const ChatBot = () => {
 
   const exportChat = () => {
     // Create a text representation of the chat
-    let chatText = "Chat with EcoBot\n\n";
+    let chatText = "Chat with EcoBot v3\n\n";
 
     messages.forEach((msg) => {
       const time = msg.timestamp.toLocaleTimeString();
@@ -373,7 +373,7 @@ const ChatBot = () => {
                   <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center mr-2">
                     <span className="text-base sm:text-lg">🌱</span>
                   </div>
-                  <h2 className="text-lg sm:text-xl font-bold">VisionBot</h2>
+                  <h2 className="text-lg sm:text-xl font-bold">EcoBot-v3</h2>
                 </div>
                 <div className="flex items-center space-x-1 sm:space-x-2">
                   <button
@@ -395,7 +395,11 @@ const ChatBot = () => {
                     className="p-1 hover:bg-green-700 rounded-full transition-colors"
                     title={darkMode ? "Light mode" : "Dark mode"}
                   >
-                    {darkMode ? <FiSun size={16} className="sm:w-5 sm:h-5" /> : <FiMoon size={16} className="sm:w-5 sm:h-5" />}
+                    {darkMode ? (
+                      <FiSun size={16} className="sm:w-5 sm:h-5" />
+                    ) : (
+                      <FiMoon size={16} className="sm:w-5 sm:h-5" />
+                    )}
                   </button>
                   <button
                     onClick={() => setIsOpen(false)}
@@ -458,7 +462,7 @@ const ChatBot = () => {
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5, duration: 1 }}
                           >
-                            Hello! I'm VisionBot 🌱
+                            Hello! I'm EcoBot-v3 🌱
                           </motion.h2>
                         </motion.div>
                         <motion.p
@@ -469,7 +473,7 @@ const ChatBot = () => {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 1.5, duration: 0.8 }}
                         >
-                          Your sustainable AI assistant
+                          Your sustainable AI assistant v3
                         </motion.p>
                         <motion.p
                           className={`mt-3 text-sm sm:text-base ${
@@ -479,8 +483,8 @@ const ChatBot = () => {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 2.5, duration: 0.8 }}
                         >
-                          Ask me about how to use the website, any eco-friendly tips or how to
-                          reduce your carbon footprint!
+                          Ask me about how to use the website, any eco-friendly
+                          tips or how to reduce your carbon footprint!
                         </motion.p>
                       </div>
                     </motion.div>
@@ -752,8 +756,9 @@ const ChatBot = () => {
                 <span className="text-base sm:text-lg">🌱</span>
               </div>
               <p className="text-xs sm:text-sm text-gray-700">
-                Hi! I'm <span className="font-bold text-green-600">VisionBot</span>
-                , your AI assistant. How can I help you today?
+                Hi! I'm{" "}
+                <span className="font-bold text-green-600">VisionBot</span>,
+                your AI assistant. How can I help you today?
               </p>
             </div>
             <div className="absolute bottom-0 right-4 transform translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-green-200"></div>
