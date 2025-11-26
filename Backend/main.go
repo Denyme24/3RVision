@@ -65,10 +65,16 @@ type AnalysisResponse struct {
 }
 
 func init() {
+	log.Println("========================================")
+	log.Println("🚀 Initializing 3RVision Backend v3")
+	log.Println("========================================")
+
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: Error loading .env file. Using environment variables.")
 	}
+
+	log.Println("✅ Environment variables loaded")
 
 	// Initialize AWS S3 client
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
@@ -78,6 +84,7 @@ func init() {
 		log.Fatal("AWS config error:", err)
 	}
 	s3Client = s3.NewFromConfig(cfg)
+	log.Printf("✅ AWS S3 client initialized (Region: %s)", os.Getenv("AWS_REGION"))
 
 	// Initialize Gemini client
 	ctx := context.Background()
@@ -85,6 +92,8 @@ func init() {
 	if err != nil {
 		log.Fatal("Gemini client error:", err)
 	}
+	log.Println("✅ Gemini AI client initialized")
+	log.Println("========================================")
 }
 
 func main() {
@@ -113,21 +122,33 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server running on port %s", port)
+	log.Println("========================================")
+	log.Printf("🌟 3RVision Backend v3 Server")
+	log.Printf("📍 Running on port %s", port)
+	log.Printf("🔗 Endpoints available:")
+	log.Printf("   POST /api/upload - S3 Upload")
+	log.Printf("   POST /api/analyze - AI Analysis")
+	log.Println("========================================")
 	log.Fatal(r.Run(":" + port))
 }
 
 func handleUpload(c *gin.Context) {
+	log.Println("📤 [v3] Upload request received")
+
 	// Get the file from the request
 	file, header, err := c.Request.FormFile("image")
 	if err != nil {
+		log.Printf("❌ [v3] Failed to get file: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file from request: " + err.Error()})
 		return
 	}
 	defer file.Close()
 
+	log.Printf("📁 [v3] Processing file: %s", header.Filename)
+
 	// Generate a unique filename
 	filename := time.Now().Format("20060102150405") + "-" + header.Filename
+	log.Printf("🏷️ [v3] Generated filename: %s", filename)
 
 	// Upload to S3
 	bucketName := os.Getenv("S3_BUCKET_NAME")
@@ -136,19 +157,21 @@ func handleUpload(c *gin.Context) {
 		return
 	}
 
+	log.Printf("☁️ [v3] Uploading to S3 bucket: %s", bucketName)
 	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: &bucketName,
 		Key:    &filename,
 		Body:   file,
 	})
 	if err != nil {
-		log.Printf("S3 upload error: %v", err)
+		log.Printf("❌ [v3] S3 upload error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to S3: " + err.Error()})
 		return
 	}
 
 	// Generate the S3 URL
 	url := "https://" + bucketName + ".s3." + os.Getenv("AWS_REGION") + ".amazonaws.com/" + filename
+	log.Printf("✅ [v3] Upload successful! URL: %s", url)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "File uploaded successfully",
@@ -157,12 +180,17 @@ func handleUpload(c *gin.Context) {
 }
 
 func handleAnalyze(c *gin.Context) {
+	log.Println("🔍 [v3] Analysis request received")
+
 	// Get the file from the request
 	file, err := c.FormFile("image")
 	if err != nil {
+		log.Printf("❌ [v3] Failed to get file: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file from request: " + err.Error()})
 		return
 	}
+
+	log.Printf("📁 [v3] Analyzing file: %s", file.Filename)
 
 	// Read the file
 	src, err := file.Open()
@@ -180,22 +208,24 @@ func handleAnalyze(c *gin.Context) {
 	}
 
 	log.Printf("Processing image: %s (size: %d bytes)", file.Filename, len(imageData))
+	log.Printf("🤖 [v3] Calling Flask ML server...")
 
 	// Get categories from Flask server
 	flaskResponse, err := getCategoriesFromFlask(imageData)
 	if err != nil {
-		log.Printf("Warning: Flask server error: %v", err)
+		log.Printf("⚠️ [v3] Flask server error: %v", err)
 		flaskResponse = &FlaskResponse{
 			Categories: []string{"general waste"},
 		}
 	}
 
 	log.Printf("Categories from Flask: %v", flaskResponse.Categories)
+	log.Printf("🧠 [v3] Calling Gemini AI for analysis...")
 
 	// Analyze with Gemini
 	analysisResponse, err := analyzeWithGemini(flaskResponse.Categories, imageData)
 	if err != nil {
-		log.Printf("Gemini analysis error: %v", err)
+		log.Printf("❌ [v3] Gemini analysis error: %v", err)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Analysis completed with limited results",
 			"analysis": AnalysisResponse{
