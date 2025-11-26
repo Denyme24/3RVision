@@ -24,6 +24,10 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 # Ensure the upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+print("========================================")
+print("🚀 3RVision ML Server v3 Starting...")
+print("========================================")
+
 # Class names based on the new model's categories
 class_names = [
     'E-waste', 'Organics', 'aerosol_cans', 'automobile wastes', 'battery waste',
@@ -135,21 +139,20 @@ def get_ml_results(filename):
 
 @app.route('/ml/upload', methods=['POST'])
 def upload_file():
-    print("Upload endpoint hit")
+    print("🔍 [v3] ML Upload endpoint hit")
     
     if 'file' not in request.files:
         print("No file in request.files")
         return jsonify({'error': 'No file provided'}), 400
     
     file = request.files['file']
-    print(f"Received file: {file.filename}")
+    print(f"📁 [v3] Processing file: {file.filename}")
     
     if file.filename == '':
         print("Empty filename")
         return jsonify({'error': 'No file selected'}), 400
     
     if file and allowed_file(file.filename):
-        print("File is valid")
         # Create a unique filename
         ext = file.filename.rsplit('.', 1)[1].lower()
         filename = f"{uuid.uuid4().hex}.{ext}"
@@ -204,6 +207,10 @@ def upload_file():
 if __name__ == '__main__':
     # Make sure the app runs only if the model loaded successfully
     if model is not None:
+        print("========================================")
+        print("🌟 3RVision ML Server v3 Running")
+        print("📍 Host: 0.0.0.0 | Port: 5001")
+        print("========================================")
         app.run(host='0.0.0.0', port=5001, debug=True)
     else:
         print("Application cannot start because the model failed to load.")
